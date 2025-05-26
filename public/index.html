@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Mini Cliente GraphQL</title>
+</head>
+
+<body>
+  <h1>Mini Cliente GraphQL</h1>
+
+  <section>
+    <h2>Doctores</h2>
+    <ul id="doctors-list"></ul>
+
+    <h3>Crear Doctor</h3>
+    <form id="create-doctor-form">
+      <div>
+        <label for="name">Nombre:</label>
+        <input type="text" id="name" required />
+      </div>
+      <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" required />
+      </div>
+      <div>
+        <label for="specialty">Especialidad:</label>
+        <select id="specialty" required>
+          <option value="CARDIOLOGY">Cardiología</option>
+          <option value="DERMATOLOGY">Dermatología</option>
+          <option value="PEDIATRICS">Pediatría</option>
+          <option value="GENERAL_MEDICINE">Medicina General</option>
+        </select>
+      </div>
+      <button type="submit">Crear</button>
+      <div id="error-msg" class="error"></div>
+    </form>
+  </section>
+
+  <section>
+    <h2>Pacientes</h2>
+    <ul id="patients-list"></ul>
+
+    <h3>Crear Paciente</h3>
+    <form id="create-patient-form">
+      <div>
+        <label for="patient-name">Nombre:</label>
+        <input type="text" id="patient-name" required />
+      </div>
+      <div>
+        <label for="age">Edad:</label>
+        <input type="number" id="age" required />
+      </div>
+      <div>
+        <label for="patient-email">Email:</label>
+        <input type="email" id="patient-email" required />
+      </div>
+      <button type="submit">Crear</button>
+      <div id="patient-error-msg" class="error"></div>
+    </form>
+  </section>
+
+  <section>
+    <h2>Citas Médicas</h2>
+    <ul id="appointments-list"></ul>
+    <h3>Agendar Cita</h3>
+    <form id="create-appointment-form">
+      <div>
+        <label for="doctor-select">Doctor:</label>
+        <select id="doctor-select" required></select>
+      </div>
+      <div>
+        <label for="patient-select">Paciente:</label>
+        <select id="patient-select" required></select>
+      </div>
+      <div>
+        <label for="appointment-date">Fecha y hora:</label>
+        <input type="datetime-local" id="appointment-date" required />
+      </div>
+      <button type="submit">Agendar</button>
+      <div id="appointment-error-msg" class="error"></div>
+    </form>
+
+    <div id="edit-doctor-modal" style="display: none;">
+      <form id="edit-doctor-form">
+        <input id="doctor-name" type="text" placeholder="Nombre" required />
+        <input id="doctor-email" type="email" placeholder="Email" required />
+        <select id="doctor-specialty" required>
+          <option value="CARDIOLOGY">Cardiología</option>
+          <option value="DERMATOLOGY">Dermatología</option>
+          <option value="PEDIATRICS">Pediatría</option>
+        </select>
+        <button type="submit">Guardar Cambios</button>
+        <button type="button" onclick="closeEditDoctorModal()">Cancelar</button>
+      </form>
+    </div>
+
+    <div id="edit-patient-modal" style="display: none;">
+      <form id="edit-patient-form">
+        <input id="edit-patient-name" type="text" placeholder="Nombre" required />
+        <input id="edit-patient-age" type="number" placeholder="Edad" required />
+        <input id="edit-patient-email" type="email" placeholder="Email" required />
+        <button type="submit">Guardar Cambios</button>
+        <button type="button" onclick="closeEditPatientModal()">Cancelar</button>
+      </form>
+    </div>
+    
+
+    <div id="edit-appointment-modal" style="display: none;">
+      <form id="edit-appointment-form">
+        <select id="appointment-doctor-select" required>
+          <option value="doctor1">Dr. Pérez - Cardiología</option>
+          <option value="doctor2">Dra. López - Dermatología</option>
+          <option value="doctor3">Dr. Gómez - Pediatría</option>
+        </select>
+        <select id="appointment-patient-select" required>
+        </select>
+        <input id="appointment-date" type="date" required />
+        <input id="appointment-time" type="time" required />
+        <textarea id="appointment-notes-edit" placeholder="Notas de la cita"></textarea>
+        <button type="submit">Guardar Cambios</button>
+        <button type="button" onclick="closeEditAppointmentModal()">Cancelar</button>
+      </form>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+
+</body>
+
+</html>
