@@ -1,4 +1,8 @@
-const API_URL = 'http://localhost:5050/graphql';
+//const API_URL = 'http://localhost:5050/graphql';
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:5050/graphql' 
+  : `https://${window.location.hostname}/graphql`;
+
 
     async function fetchDoctors() {
 
