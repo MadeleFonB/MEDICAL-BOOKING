@@ -34,6 +34,7 @@ async function startServer() {
   apolloServer.applyMiddleware({ app });
 
   const PORT = process.env.PORT || 5050;
+  console.log(process.env.MONGODB_URI);
   app.listen(PORT, () => {
     console.log(`🚀 Servidor listo en http://localhost:${PORT}${apolloServer.graphqlPath}`);
     console.log(`🖥️  Frontend servido en http://localhost:${PORT}/index.html`);
