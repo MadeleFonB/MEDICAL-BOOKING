@@ -415,38 +415,72 @@ const API_URL = 'http://localhost:5050/graphql';
         return data.appointments;
     }
 
+    function formatDate(timestamp) {
+        const dateObj = new Date(Number(timestamp));
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const hours = String(dateObj.getHours()).padStart(2, '0');
+        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+    }
+    
     function renderAppointments(appointments) {
         const ul = document.getElementById('appointments-list');
         ul.innerHTML = '';
         appointments.forEach(app => {
             const li = document.createElement('li');
-            li.textContent = `📅 ${app.date} - 👨‍⚕️ ${app.doctor.name} con 🧑 ${app.patient.name} - Duración: ${app.duration !== undefined ? app.duration + ' min' : 'N/D'} - Notas: ${app.notes ? app.notes : 'Ninguna'}`;
-
+    
+            const dateStr = !isNaN(Number(app.date)) ? formatDate(app.date) : app.date;
+    
+            li.textContent = `📅 ${dateStr} - 👨‍⚕️ ${app.doctor.name} con 🧑 ${app.patient.name} - Duración: ${app.duration !== undefined ? app.duration + ' min' : 'N/D'} - Notas: ${app.notes ? app.notes : 'Ninguna'}`;
+    
             const editBtn = document.createElement('button');
             editBtn.textContent = 'Editar';
             editBtn.onclick = () => openEditAppointmentForm(app);
-
+    
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'Eliminar';
             deleteBtn.onclick = () => deleteAppointment(app.id);
-
+    
             li.appendChild(editBtn);
             li.appendChild(deleteBtn);
             ul.appendChild(li);
         });
     }
+    
 
     async function openEditAppointmentForm(app) {
         openEditAppointmentModal();
         await fillDoctorSelect('appointment-doctor-select', app.doctor.id);
         await fillPatientSelect('appointment-patient-select', app.patient.id);
-        const isoDate = new Date(app.date).toISOString().slice(0, 16);
-        document.getElementById('appointment-date').value = isoDate;
-        document.getElementById('appointment-time').value = app.duration || '';
+    
+        // Aquí agregas el código para manejar y validar la fecha:
+        let dateObj;
+        if (!isNaN(Number(app.date))) {
+            dateObj = new Date(Number(app.date));
+        } else {
+            dateObj = new Date(app.date);
+        }
+    
+        if (isNaN(dateObj.getTime())) {
+            console.error('Fecha inválida:', app.date);
+            document.getElementById('appointment-date').value = '';
+            document.getElementById('appointment-time').value = '';
+        } else {
+            document.getElementById('appointment-date').value = dateObj.toISOString().slice(0, 10);
+            document.getElementById('appointment-time').value = dateObj.toTimeString().slice(0, 5);
+        }
+    
+        document.getElementById('appointment-duration').value = app.duration || '';
         document.getElementById('appointment-notes-edit').value = app.notes || '';
+    
         const form = document.getElementById('edit-appointment-form');
         form.dataset.appointmentId = app.id;
     }
+    
+    
+    
 
     async function fillDoctorSelect(selectId, selectedDoctorId) {
         const select = document.getElementById(selectId);
@@ -506,50 +540,57 @@ const API_URL = 'http://localhost:5050/graphql';
 
     document.getElementById('edit-appointment-form').addEventListener('submit', async e => {
         e.preventDefault();
-        console.log('Guardando cambios...');
-
+    
         const form = e.target;
         const id = form.dataset.appointmentId;
         const doctorId = document.getElementById('appointment-doctor-select').value;
         const patientId = document.getElementById('appointment-patient-select').value;
-        const date = document.getElementById('appointment-date').value;
-        const duration = document.getElementById('appointment-time').value;
+        const date = document.getElementById('appointment-date').value; // YYYY-MM-DD
+        const time = document.getElementById('appointment-time').value; // HH:mm
+        const durationStr = document.getElementById('appointment-duration').value;
         const notes = document.getElementById('appointment-notes-edit').value;
-
+    
+        console.log('Fecha:', date);
+console.log('Hora:', time);
+        if (!date || !time) {
+            alert('Por favor, completa la fecha y hora correctamente.');
+            return;
+          }
+          
+          const dateTimeISO = new Date(`${date}T${time}:00`).toISOString();    
         const mutation = `
-    mutation($id: ID!, $doctorId: ID!, $patientId: ID!, $date: String!, $duration: Int, $notes: String) {
-      updateAppointment(id: $id, doctorId: $doctorId, patientId: $patientId, date: $date, duration: $duration, notes: $notes) {
-        id
-      }
-    }
-  `;
-
+            mutation($id: ID!, $doctorId: ID!, $patientId: ID!, $date: String!, $duration: Int, $notes: String) {
+              updateAppointment(id: $id, doctorId: $doctorId, patientId: $patientId, date: $date, duration: $duration, notes: $notes) {
+                id
+              }
+            }
+        `;
+    
         const variables = {
             id,
             doctorId,
             patientId,
-            date,
-            duration: duration ? parseInt(duration) : null,
+            date: dateTimeISO,
+            duration: durationStr ? parseInt(durationStr) : null,
             notes: notes || null,
         };
-
+    
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query: mutation, variables }),
             });
-            console.log('response ', response);
-
             const { errors } = await response.json();
             if (errors) throw new Error(errors.map(e => e.message).join(', '));
-
+    
             closeEditAppointmentModal();
             loadAppointments();
         } catch (err) {
             alert('Error actualizando cita: ' + err.message);
         }
     });
+    
 
 
 
@@ -630,7 +671,7 @@ const API_URL = 'http://localhost:5050/graphql';
 
         const doctorId = document.getElementById('doctor-select').value;
         const patientId = document.getElementById('patient-select').value;
-        const date = document.getElementById('appointment-date').value;
+        const date = document.getElementById('appointment-date-agendar').value;
 
         if (!doctorId || !patientId || !date) {
             errorDiv.textContent = 'Por favor, completa todos los campos.';
